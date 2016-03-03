@@ -1,1 +1,6 @@
-<RCC/>
+<RCC>
+    <qresource prefix="/myFile">
+        <file>moveLeft.wav</file>
+        <file>moveRight.wav</file>
+    </qresource>
+</RCC>
