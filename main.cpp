@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
         if (signalSum>thresholdSum && actionTriggered == 0)
         {
             //TRIGGER ACTION: RIGHT ARROW KEY
-            GenerateKey(VK_RIGHT, FALSE);
+            GenerateKey(VK_NEXT, FALSE);
             actionTriggered = 1;
             if (w.getCheckBoxValue())
             {
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
         if (signalSum<-thresholdSum && actionTriggered == 0)
         {
             //TRIGGER ACTION: LEFT ARROW KEY
-            GenerateKey(VK_LEFT, FALSE);
+            GenerateKey(VK_PRIOR, FALSE);
             //w.setText("Left Tilting detected",1);
             actionTriggered = -1;
 
