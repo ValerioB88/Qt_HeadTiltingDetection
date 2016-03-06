@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>376</width>
-    <height>236</height>
+    <width>359</width>
+    <height>185</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,6 +59,9 @@
         <property name="text">
          <string/>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
@@ -81,27 +84,17 @@
       <item row="3" column="0">
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+         <widget class="QPushButton" name="btnPause">
+          <property name="text">
+           <string>Pause</string>
           </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QTextEdit" name="txtInfo">
-          <property name="readOnly">
+          <property name="checkable">
            <bool>true</bool>
           </property>
-          <property name="acceptRichText">
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
            <bool>false</bool>
           </property>
          </widget>
@@ -110,19 +103,6 @@
       </item>
       <item row="3" column="1">
        <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
         <item>
          <widget class="QPushButton" name="btnQuit">
           <property name="text">
@@ -141,7 +121,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>376</width>
+     <width>359</width>
      <height>21</height>
     </rect>
    </property>
@@ -166,12 +146,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>197</x>
-     <y>64</y>
+     <x>264</x>
+     <y>62</y>
     </hint>
     <hint type="destinationlabel">
-     <x>314</x>
-     <y>70</y>
+     <x>348</x>
+     <y>62</y>
     </hint>
    </hints>
   </connection>

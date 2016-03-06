@@ -9,6 +9,8 @@
 #include <QSlider>
 #include <QMessageBox>
 #include <QtMultimedia/QSound>
+#include <QCamera>
+#include <QCameraImageCapture>
 //#include <QSound>
 cv::CascadeClassifier face_cascade;
 cv::CascadeClassifier eye_cascade;
@@ -26,27 +28,33 @@ int main(int argc, char *argv[])
 
 
 
+
     //QSound tiltSound();
 
-
+    cv::namedWindow("Cam Viewer");
     face_cascade.load("haarcascade_frontalface_alt2.xml");
     eye_cascade.load("haarcascade_eye_tree_eyeglasses.xml");
 
     // Open webcam
 
-    cv::VideoCapture cap(0);
+    cv::VideoCapture cap;
+    cap.open(0);
 
     double threshold = 0.3;
 
     // Check if everything is ok
-    if (face_cascade.empty() || eye_cascade.empty() || !cap.isOpened())
+    if (face_cascade.empty() || eye_cascade.empty())
         return QMessageBox::critical(&w, "Critical Error", "HaarCascade File (.xml) not found!");
+
+    if ( !cap.isOpened())
+          return QMessageBox::critical(&w, "Critical Error", "Webcam cannot be open!");
 
     // Set video to 320x240
     int VideoW=320;
     int VideoH=240;
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, VideoW);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, VideoH);
+    cv::Size sizeW(VideoW,VideoH);
+    //cap.set(CV_CAP_PROP_FRAME_WIDTH, VideoW);
+    //cap.set(CV_CAP_PROP_FRAME_HEIGHT, VideoH);
 
     std::cout.precision(3);
 
@@ -75,7 +83,7 @@ int main(int argc, char *argv[])
 
     int degree = 0;
 
-    int thresholdSum = 400;
+    int thresholdSum = 300;
     int signalSum = 0;
     int savedHistory = 20;
     int actionTriggered = 0;
@@ -92,11 +100,11 @@ int main(int argc, char *argv[])
         degreeV[i] = 0;
 
     cap >> frame;
-    cv::Size sizeFrame = frame.size();
+  //  cv::Size sizeFrame = frame.size();
     cv::Rect allImg;
-    allImg.height = sizeFrame.height;
-    allImg.width = sizeFrame.width;
-
+    //allImg.height = sizeFrame.height;
+    //allImg.width = sizeFrame.width;]#
+    allImg.height=VideoH; allImg.width=VideoW;
 
     int updateTemplateFace;
     updateTemplateFace = 1;
@@ -105,14 +113,33 @@ int main(int argc, char *argv[])
     int timeStepsCascadeFace = 0;
     int timeStepsCascadeRE = 0;
     int timeStepsCascadeLE = 0;
-    int timeTriggeredUntilForceDetection = 25;
+    int timeTriggeredUntilForceDetection = 20;
     int counterForceDetectoinTrigger = 0;
 
 
+    w.setSliderValue(thresholdSum);
+
+        cap.read(frame);
 
     while (cv::waitKey(10) != 'q' && w.isVisible())
     {
+         cap >> frame;
 
+          cv::flip(frame, frame, 1);
+    cv::resize(frame,frame,sizeW);
+          if (frame.empty())
+          {
+              if ( !cap.isOpened())
+                    return QMessageBox::critical(&w, "Critical Error", "Webcam cannot be open!");
+
+            QMessageBox::about(&w, "e","e");
+            continue;
+            }
+        if (w.isPaused()==1)
+        {
+            cv::imshow("Cam Viewer",frame);
+            continue;
+        }
 
         if (w.getForceDetection())
         {
@@ -137,12 +164,12 @@ int main(int argc, char *argv[])
         timeStepsCascadeLE++;
         /*trackedR = 0;
             trackedL = 0;*/
-        cap >> frame;
-        if (frame.empty())
-            break;
 
-        // Flip the frame horizontally, Windows users might need this
-        cv::flip(frame, frame, 1);
+        if (frame.empty())
+        {;
+          //  QMessageBox::critical(&w, "Error", "Error, frame is empty. Check your webcam!");
+          //  break;
+        }
 
         cv::Mat gray;
         cv::cvtColor(frame, gray, CV_BGR2GRAY);
@@ -153,13 +180,10 @@ int main(int argc, char *argv[])
 
         if (faceDetected == 0 || (actionTriggered == 0 && timeStepsCascadeFace%runCascadeEach == 0) || forceDetection==1)
         {
-
-            //w.setText("Trying to detect face...",1);
             timeStepsCascadeFace = 1; //set this to 1 if you want to use it
             faceDetected = applyCascade(gray, face_rec, 1, allImg);
             if (faceDetected)
             {
-              //  w.setText("Face Detected",1);
                 face_tpl = gray(face_rec);
             }
             else
@@ -167,13 +191,13 @@ int main(int argc, char *argv[])
         }
         if ((ReyeDetected == 0 || (actionTriggered == 0 && timeStepsCascadeRE%runCascadeEach == 0)  || forceDetection == 1) && faceDetected==1)
         {
-            //w.setText("Trying to detect right eye...",1);
+
             timeStepsCascadeRE = 1;
             rEyeROI.x = face_rec.x + face_rec.width / 2; rEyeROI.y = face_rec.y + face_rec.height / 8; rEyeROI.width = face_rec.width / 2; rEyeROI.height = face_rec.height / 2;
             ReyeDetected = applyCascade(gray, eyeR_rec, 0, rEyeROI);
             if (ReyeDetected)
             {
-              //  w.setText("Right eye detected",1);
+
                 cv::rectangle(frame, eyeR_rec, CV_RGB(0, 255, 0));
                 rEye_tpl = gray(eyeR_rec);
             }
@@ -182,13 +206,13 @@ int main(int argc, char *argv[])
         }
         if ((LeyeDetected == 0 || (actionTriggered == 0 && timeStepsCascadeLE%runCascadeEach == 0) || forceDetection == 1) && faceDetected == 1)
         {
-            //w.setText("Trying to detect left eye...",1);
+
             timeStepsCascadeLE = 1;
             lEyeROI.x = face_rec.x; lEyeROI.y = face_rec.y + face_rec.height / 8; lEyeROI.width = face_rec.width / 2; lEyeROI.height = face_rec.height / 2;
             LeyeDetected = applyCascade(gray, eyeL_rec, 0, lEyeROI);
             if (LeyeDetected)
             {
-              //  w.setText("Left eye detected",1);
+
                 cv::rectangle(frame, eyeL_rec, CV_RGB(0, 0, 0));
                 lEye_tpl = gray(eyeL_rec);
             }
@@ -293,8 +317,8 @@ int main(int argc, char *argv[])
             if (w.getCheckBoxValue())
             {
                 //SOUND SIGNAL!
-                //w.setText("Right Tilting detected",1);
-                QSound::play("moveRight.wav");
+
+                QSound::play(":/myFile/moveRight.wav");
             }
 
         }
@@ -302,13 +326,13 @@ int main(int argc, char *argv[])
         {
             //TRIGGER ACTION: LEFT ARROW KEY
             GenerateKey(VK_PRIOR, FALSE);
-            //w.setText("Left Tilting detected",1);
+
             actionTriggered = -1;
 
             if (w.getCheckBoxValue())
             {
                 //SOUND SIGNAL!
-                QSound::play("moveLeft.wav");
+                QSound::play(":/myFile/moveLeft.wav");
             }
         }
         if (signalSum<thresholdSum && signalSum>-thresholdSum)
@@ -335,8 +359,7 @@ int main(int argc, char *argv[])
         if (actionTriggered==-1)
             cv::circle(frame, cv::Point(1*VideoW/4,VideoH/2), VideoH/20, CV_RGB(0, 255, 0),-1 );
 
-        cv::imshow("Cam Viewer",frame);
-
+         cv::imshow("Cam Viewer",frame);
     }
 
 

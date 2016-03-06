@@ -16,14 +16,15 @@ public:
     ~MainWindow();
     int getSliderValue() const;
     int getCheckBoxValue() const;
-
     int getForceDetection() const;
+    int isPaused() const;
+
+    void setSliderValue(int);
+
     int forceDetection=0;
 
-    void setText(QString, int);
-    QString getText() const;
 public slots:
-    int setForceDetection(bool);
+    void setForceDetection(bool);
 
 private slots:
     void on_btnForceDet_clicked();

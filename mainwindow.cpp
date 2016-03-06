@@ -36,7 +36,7 @@ int MainWindow::getForceDetection() const
    return forceDetection;
 }
 
-int MainWindow::setForceDetection(bool value)
+void MainWindow::setForceDetection(bool value)
 {
     forceDetection=value;
 }
@@ -46,20 +46,32 @@ void MainWindow::on_btnForceDet_clicked()
     forceDetection=1;
 }
 
+
+void MainWindow::setSliderValue(int value)
+{
+    ui->sldThresohld->setValue(value);
+}
+
 void MainWindow::on_btnQuit_clicked()
 {
     close();
 }
 
-void MainWindow::setText(QString text, int flagAppend=0)
+int MainWindow::isPaused() const
 {
-    if (flagAppend==1)
-        ui->txtInfo->setText(this->getText() + text);
-    else
-    ui->txtInfo->setText(text);
+   return ui->btnPause->isChecked();
 }
 
-QString MainWindow::getText() const
-{
-    ui->txtInfo->toPlainText();
-}
+//void MainWindow::setText(QString text, int flagAppend=0)
+//{
+//   if (this->getText()!=text)
+//    if (flagAppend==1)
+//        ui->txtInfo->setText(this->getText() + text);
+//    else
+//    ui->txtInfo->setText(text);
+//}
+
+//QString MainWindow::getText() const
+//{
+//    return ui->txtInfo->toPlainText();
+//}
