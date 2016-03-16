@@ -2,5 +2,9 @@
     <qresource prefix="/myFile">
         <file>moveLeft.wav</file>
         <file>moveRight.wav</file>
+        <file>flipLeft.png</file>
+        <file>flipRight.png</file>
+        <file>flipHorz.png</file>
+        <file>flipVert.png</file>
     </qresource>
 </RCC>

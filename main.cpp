@@ -7,11 +7,10 @@
 #include <iostream>
 #include <Windows.h>
 #include <QSlider>
-#include <QMessageBox>
+
 #include <QtMultimedia/QSound>
 #include <QCamera>
 #include <QCameraImageCapture>
-//#include <QSound>
 cv::CascadeClassifier face_cascade;
 cv::CascadeClassifier eye_cascade;
 
@@ -19,15 +18,16 @@ cv::CascadeClassifier eye_cascade;
 #include "HelpingFun.h"
 
 
-
 int main(int argc, char *argv[])
 {
+
+
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
 
 
-
+    w.callInstructions();
 
     //QSound tiltSound();
 
@@ -47,12 +47,14 @@ int main(int argc, char *argv[])
         return QMessageBox::critical(&w, "Critical Error", "HaarCascade File (.xml) not found!");
 
     if ( !cap.isOpened())
-          return QMessageBox::critical(&w, "Critical Error", "Webcam cannot be open!");
+        return QMessageBox::critical(&w, "Critical Error", "Webcam cannot be open!");
 
     // Set video to 320x240
-    int VideoW=320;
-    int VideoH=240;
-    cv::Size sizeW(VideoW,VideoH);
+    int origVideoW=320;
+    int origVideoH=240;
+
+    int VideoW=origVideoW; int VideoH=origVideoH;
+
     //cap.set(CV_CAP_PROP_FRAME_WIDTH, VideoW);
     //cap.set(CV_CAP_PROP_FRAME_HEIGHT, VideoH);
 
@@ -62,7 +64,9 @@ int main(int argc, char *argv[])
     int ReyeDetected=0;
     int LeyeDetected=0;
 
+    cv::Mat origFrame;
     cv::Mat frame;
+
     cv::Mat face_tpl;
     cv::Mat rEye_tpl;
     cv::Mat lEye_tpl;
@@ -99,12 +103,13 @@ int main(int argc, char *argv[])
     for (int i = 0; i < degreeV.size(); i++)
         degreeV[i] = 0;
 
-    cap >> frame;
-  //  cv::Size sizeFrame = frame.size();
-    cv::Rect allImg;
+    cap >> origFrame;
+    //  cv::Size sizeFrame = frame.size();
+    cv::Rect origAllImg; cv::Rect allImg;
     //allImg.height = sizeFrame.height;
     //allImg.width = sizeFrame.width;]#
-    allImg.height=VideoH; allImg.width=VideoW;
+    origAllImg.height=origVideoH; origAllImg.width=origVideoW;
+    allImg=origAllImg;
 
     int updateTemplateFace;
     updateTemplateFace = 1;
@@ -119,22 +124,84 @@ int main(int argc, char *argv[])
 
     w.setSliderValue(thresholdSum);
 
-        cap.read(frame);
+    cap.read(origFrame);
 
+    int flagRot=0;
+
+    cv::Mat gray;
+    int tryFrame=0;
     while (cv::waitKey(10) != 'q' && w.isVisible())
     {
-         cap >> frame;
 
-          cv::flip(frame, frame, 1);
-    cv::resize(frame,frame,sizeW);
-          if (frame.empty())
-          {
-              if ( !cap.isOpened())
-                    return QMessageBox::critical(&w, "Critical Error", "Webcam cannot be open!");
 
-            QMessageBox::about(&w, "e","e");
-            continue;
-            }
+        cap >> frame;
+        cv::flip(frame,frame,1);
+        cv::resize(frame,frame,cv::Size(origVideoW, origVideoH));
+
+        // frame=origFrame;
+
+        if ((w.rotate==1 || w.rotate==3) && flagRot==0)
+        {
+            face_cascade.load("haarcascade_frontalface_alt2.xml");
+            eye_cascade.load("haarcascade_eye_tree_eyeglasses.xml");
+
+            flagRot=1;
+            VideoH=origVideoW;
+            VideoW=origVideoH;
+            allImg.height=VideoH; allImg.width=VideoW; //there is an error here on in the next one
+            forceDetection=1;
+
+        }
+        if ((w.rotate==0 || w.rotate==2 ) &&  flagRot==1)
+        {
+            face_cascade.load("haarcascade_frontalface_alt2.xml");
+            eye_cascade.load("haarcascade_eye_tree_eyeglasses.xml");
+
+            flagRot=0;
+            VideoH=origVideoH;
+            VideoW=origVideoW;
+            allImg.height=VideoH; allImg.width=VideoW;
+
+            forceDetection=1;
+            // frame.release();
+            //  gray.release();
+
+        }
+
+        if (w.rotate==1)
+        {
+            cv::flip(frame,frame,0);
+            cv::transpose(frame, frame);
+        }
+        if (w.rotate==2)
+        {
+            cv::transpose(frame,frame);
+            cv::flip(frame,frame,1);
+            cv::transpose(frame,frame);
+        }
+        if (w.rotate==3)
+        {
+            cv::transpose(frame,frame);
+        }
+
+
+        if (w.flipHorzValue==1)
+        {
+            cv::flip(frame,frame,1);
+        }
+        if (w.flipVertValue==1)
+        {
+            cv::flip(frame,frame,0);
+        }
+
+        if (frame.empty())
+        {
+            if ( !cap.isOpened())
+                return QMessageBox::critical(&w, "Critical Error", "Webcam cannot be open!");
+            if (++tryFrame>2) QMessageBox::critical(&w, "Critical Error", "Webcam cannot be open!");
+            else QMessageBox::about(&w, "Error", "Webcam cannot be open! Retry...");
+
+        }
         if (w.isPaused()==1)
         {
             cv::imshow("Cam Viewer",frame);
@@ -159,21 +226,13 @@ int main(int argc, char *argv[])
         thresholdSum=w.getSliderValue();
 
 
-        timeStepsCascadeFace++; //ignore this for now, set it to timeStepsCascade++ if you want to use it (change alos the other stuff)
+        timeStepsCascadeFace++;
         timeStepsCascadeRE++;
         timeStepsCascadeLE++;
-        /*trackedR = 0;
-            trackedL = 0;*/
 
-        if (frame.empty())
-        {;
-          //  QMessageBox::critical(&w, "Error", "Error, frame is empty. Check your webcam!");
-          //  break;
-        }
 
-        cv::Mat gray;
+
         cv::cvtColor(frame, gray, CV_BGR2GRAY);
-
 
         //THE RETURN VALUE INDICATES IF THE DETECTION WAS SUCCESSFUL, but often we will use the rect.x,y,height and width to check if any template is available
         //(we may want to use the last useful template)
@@ -184,11 +243,12 @@ int main(int argc, char *argv[])
             faceDetected = applyCascade(gray, face_rec, 1, allImg);
             if (faceDetected)
             {
-                face_tpl = gray(face_rec);
+              face_tpl = gray(face_rec);
             }
             else
                 timeStepsCascadeFace = runCascadeEach - 1; //will be run again next time
         }
+
         if ((ReyeDetected == 0 || (actionTriggered == 0 && timeStepsCascadeRE%runCascadeEach == 0)  || forceDetection == 1) && faceDetected==1)
         {
 
@@ -197,8 +257,6 @@ int main(int argc, char *argv[])
             ReyeDetected = applyCascade(gray, eyeR_rec, 0, rEyeROI);
             if (ReyeDetected)
             {
-
-                cv::rectangle(frame, eyeR_rec, CV_RGB(0, 255, 0));
                 rEye_tpl = gray(eyeR_rec);
             }
             else
@@ -212,8 +270,6 @@ int main(int argc, char *argv[])
             LeyeDetected = applyCascade(gray, eyeL_rec, 0, lEyeROI);
             if (LeyeDetected)
             {
-
-                cv::rectangle(frame, eyeL_rec, CV_RGB(0, 0, 0));
                 lEye_tpl = gray(eyeL_rec);
             }
             else
@@ -222,6 +278,7 @@ int main(int argc, char *argv[])
         }
 
         forceDetection = 0;
+
         //TRACK FACE
         if (face_rec.height != 0 && face_rec.width!=0)
         {
@@ -235,9 +292,13 @@ int main(int argc, char *argv[])
             faceROI &= cv::Rect(0, 0, gray.cols, gray.rows);
 
             faceDetected = templateMatch(gray, face_tpl, face_rec, faceROI); //ROI NOT IMPLEMENTED YET
-            cv::rectangle(frame, face_rec, CV_RGB(0, 255, 255));
+
         }
         //TRACK RIGHT EYES, IF POSSIBLE INSIDE THE ROI
+
+
+        //cv::imshow("Gray Cam Viewer",gray);
+
 
         if (eyeR_rec.height!=0 && eyeR_rec.width!=0)
         {
@@ -253,10 +314,6 @@ int main(int argc, char *argv[])
                 rEyeROI.width = eyeR_rec.width* 1.5;
                 rEyeROI &= cv::Rect(0, 0, gray.cols, gray.rows);
             }
-            /*cv::rectangle(frame, eyeR_rec, CV_RGB(0, 255, 255));
-                    cv::rectangle(frame, rEyeROI, CV_RGB(255, 255, 255));*/
-
-
             ReyeDetected = templateMatch(gray, rEye_tpl, eyeR_rec,rEyeROI,threshold,1);
         }
 
@@ -275,9 +332,6 @@ int main(int argc, char *argv[])
                 lEyeROI.width = eyeL_rec.width* 1.5;
                 lEyeROI &= cv::Rect(0, 0, gray.cols, gray.rows);
             }
-            /*cv::rectangle(frame, eyeL_rec, CV_RGB(0, 255, 255));
-                    cv::rectangle(frame, lEyeROI, CV_RGB(255, 255, 255));*/
-
 
             LeyeDetected = templateMatch(gray, lEye_tpl, eyeL_rec, lEyeROI, threshold, 1);
         }
@@ -348,6 +402,7 @@ int main(int argc, char *argv[])
         int key = cv::waitKey(1);
         if (key == 32)//SPACEBAR]
         {
+            std::cout <<  "\n\n\n\n M = " << " "  << gray << endl << endl ;
             forceDetection = 1; //force detection + reset degreev
             /*for (int i = 0; i < degreev.size(); i++)
                                 degreev[i] = 0;*/
@@ -359,11 +414,12 @@ int main(int argc, char *argv[])
         if (actionTriggered==-1)
             cv::circle(frame, cv::Point(1*VideoW/4,VideoH/2), VideoH/20, CV_RGB(0, 255, 0),-1 );
 
-         cv::imshow("Cam Viewer",frame);
+        cv::imshow("Cam Viewer",frame);
+
     }
 
 
-cv::destroyAllWindows();
-//return a.exec();
-QCoreApplication::exit(1);
+    cv::destroyAllWindows();
+    //return a.exec();
+    QCoreApplication::exit(1);
 }

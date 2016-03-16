@@ -4,12 +4,13 @@
 #endif // HELPINGFUN_H
 
 
-int applyCascade(cv::Mat& im, cv::Rect& rect, int flagFaceEye, cv::Rect ROI)
+
+
+int applyCascade(const cv::Mat im, cv::Rect& rect, int flagFaceEye, const cv::Rect ROI)
 {
 
 
     std::vector<cv::Rect> resultsCascade;
-    cv::Rect temp;
 
     if (flagFaceEye==1)
         face_cascade.detectMultiScale(im(ROI), resultsCascade, 1.1, 10, 0 | CV_HAAR_SCALE_IMAGE, cv::Size(10, 10));
@@ -20,7 +21,7 @@ int applyCascade(cv::Mat& im, cv::Rect& rect, int flagFaceEye, cv::Rect ROI)
         rect = resultsCascade[0];
         rect.x = rect.x + ROI.x;
         rect.y = rect.y + ROI.y;
-        //imshow("PROVA", im(rect));
+
         return 1;
     }
     return 0;
@@ -28,7 +29,7 @@ int applyCascade(cv::Mat& im, cv::Rect& rect, int flagFaceEye, cv::Rect ROI)
 
 
 
-int templateMatch(cv::Mat& im, cv::Mat& tpl, cv::Rect& rect, cv::Rect ROI,double threshold = 0.2, int flagEye=0) //return 1 if it's been found, 0 otherwise
+int templateMatch(const cv::Mat im, cv::Mat& tpl, cv::Rect& rect, cv::Rect ROI,double threshold = 0.2, int flagEye=0) //return 1 if it's been found, 0 otherwise
 {
 
     cv::Mat dst(ROI.width - tpl.rows + 1, ROI.height - tpl.cols + 1, CV_32FC1);
@@ -46,7 +47,7 @@ int templateMatch(cv::Mat& im, cv::Mat& tpl, cv::Rect& rect, cv::Rect ROI,double
     {
         rect.x = ROI.x + minloc.x;
         rect.y = ROI.y + minloc.y;
-        tpl = im(rect); //UPDATE THE  TEMPLATE (EXPERIMENTAL)
+        tpl = im(rect).clone(); //UPDATE THE  TEMPLATE (EXPERIMENTAL)
 
         return 1;
     }
