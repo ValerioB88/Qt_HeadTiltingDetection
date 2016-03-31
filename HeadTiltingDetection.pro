@@ -7,8 +7,12 @@
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
-TARGET = HeadTiltingDetection
+win32{
+TARGET = ../QtHeadTilting_win32/HeadTiltingDetectionWin
+}
+linux{
+TARGET = bashFileLinux
+}
 TEMPLATE = app
 
 
@@ -16,13 +20,14 @@ SOURCES += main.cpp\
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
-    helpingFun.h
+    helpingFun.h \
+    HelpingFun.h
 
 FORMS    += mainwindow.ui
 
 
 
-
+win32{
 INCLUDEPATH += C:/opencv_mingw/install/include
 LIBS += "C:/opencv_mingw/bin/*.dll"
 
@@ -33,11 +38,27 @@ LIBS += -LC:/opencv_mingw/bin/ \
     -lopencv_imgproc310  \
     -lopencv_features2d310 \
     -lopencv_calib3d310 \
+}
+
+linux{
+INCLUDEPATH += .
+INCLUDEPATH += /usr/local/include
+INCLUDEPATH += /usr/local/include/qt4
+INCLUDEPATH += /usr/local/include/opencv
+INCLUDEPATH += /usr/local/include/opencv2
+
+LIBS += `pkg-config opencv --cflags --libs`
+}
 
 RESOURCES += \
     resources.qrc
 
 DESTDIR = $$PWD
+
+CONFIG += qt
+
+QTPLUGIN += qtaudio_coreaudio
+
 
 QT += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia

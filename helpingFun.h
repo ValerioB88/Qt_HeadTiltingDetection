@@ -4,7 +4,7 @@
 #endif // HELPINGFUN_H
 
 
-
+s
 
 int applyCascade(const cv::Mat im, cv::Rect& rect, int flagFaceEye, const cv::Rect ROI)
 {
@@ -67,6 +67,7 @@ int calculateDegree(cv::Rect eyeR, cv::Rect eyeL)
         return -acos(distX / h) * 360 / 3.14;
 }
 
+#ifdef _WIN32
 void GenerateKey(int vk, BOOL bExtended)
 {
     KEYBDINPUT kb = { 0 };
@@ -93,3 +94,4 @@ void GenerateKey(int vk, BOOL bExtended)
     ::SendInput(1, &Input, sizeof(Input));
 }
 
+#endif

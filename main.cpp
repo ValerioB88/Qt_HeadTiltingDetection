@@ -5,7 +5,14 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <iostream>
+
+#ifdef _WIN32
 #include <Windows.h>
+#endif
+
+
+
+
 #include <QSlider>
 
 #include <QtMultimedia/QSound>
@@ -144,7 +151,10 @@ int main(int argc, char *argv[])
         {
             face_cascade.load("haarcascade_frontalface_alt2.xml");
             eye_cascade.load("haarcascade_eye_tree_eyeglasses.xml");
-
+            face_rec.height=0;face_rec.width=0;
+            eyeL_rec.height=0; eyeL_rec.width=0;
+            eyeR_rec.height=0; eyeR_rec.width=0;
+            faceDetected=0;
             flagRot=1;
             VideoH=origVideoW;
             VideoW=origVideoH;
@@ -156,16 +166,16 @@ int main(int argc, char *argv[])
         {
             face_cascade.load("haarcascade_frontalface_alt2.xml");
             eye_cascade.load("haarcascade_eye_tree_eyeglasses.xml");
-
+            face_rec.height=0;face_rec.width=0;
+            eyeL_rec.height=0; eyeL_rec.width=0;
+            eyeR_rec.height=0; eyeR_rec.width=0;
+            faceDetected=0;
             flagRot=0;
             VideoH=origVideoH;
             VideoW=origVideoW;
             allImg.height=VideoH; allImg.width=VideoW;
 
             forceDetection=1;
-            // frame.release();
-            //  gray.release();
-
         }
 
         if (w.rotate==1)
@@ -351,7 +361,7 @@ int main(int argc, char *argv[])
         {
             degree = calculateDegree(eyeR_rec, eyeL_rec);
             std::stringstream out;			out << degree;			s = out.str();			genericText = "Degree: " + s;
-            cv::putText(frame, genericText, cv::Point(face_rec.x,face_rec.y+face_rec.height), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv::LINE_AA);
+            cv::putText(frame, genericText, cv::Point(face_rec.x,face_rec.y+face_rec.height), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2);  //cv::LINE_AA);
         }
 
         //update vector degree by discarding last result, shift, put degree of this timestep in the first place
@@ -366,7 +376,12 @@ int main(int argc, char *argv[])
         if (signalSum>thresholdSum && actionTriggered == 0)
         {
             //TRIGGER ACTION: RIGHT ARROW KEY
+            #ifdef _WIN32
             GenerateKey(VK_NEXT, FALSE);
+            #endif
+            #ifdef linux
+            system("xdotool key Page_Down");
+            #endif
             actionTriggered = 1;
             if (w.getCheckBoxValue())
             {
@@ -379,8 +394,12 @@ int main(int argc, char *argv[])
         if (signalSum<-thresholdSum && actionTriggered == 0)
         {
             //TRIGGER ACTION: LEFT ARROW KEY
+            #ifdef _WIN32
             GenerateKey(VK_PRIOR, FALSE);
-
+            #endif
+            #ifdef linux
+            system("xdotool key Page_Up");
+            #endif
             actionTriggered = -1;
 
             if (w.getCheckBoxValue())
@@ -397,7 +416,7 @@ int main(int argc, char *argv[])
 
         out.str("");
         out << signalSum;			s = out.str();			genericText = "Rotation Value: " + s + "/"; out.str(""); out<<thresholdSum; genericText=genericText+ out.str();
-        cv::putText(frame, genericText, cv::Point(face_rec.x,face_rec.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv::LINE_AA);
+        cv::putText(frame, genericText, cv::Point(face_rec.x,face_rec.y), cv::FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2); //cv::LINE_AA);
 
         int key = cv::waitKey(1);
         if (key == 32)//SPACEBAR]
