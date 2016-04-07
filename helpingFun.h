@@ -4,7 +4,6 @@
 #endif // HELPINGFUN_H
 
 
-s
 
 int applyCascade(const cv::Mat im, cv::Rect& rect, int flagFaceEye, const cv::Rect ROI)
 {
