@@ -25,15 +25,13 @@ int MainWindow::getSliderValue() const
 {
     return ui->sldThresohld->value();
 }
+
 int MainWindow::getCheckBoxValue() const
 {
     return ui->ckbForceSignal->isChecked();
 }
 
-int MainWindow::getForceDetection() const
-{
-    return forceDetection;
-}
+
 
 void MainWindow::setForceDetection(bool value)
 {

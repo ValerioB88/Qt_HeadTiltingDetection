@@ -17,10 +17,11 @@ public:
     ~MainWindow();
     int getSliderValue() const;
     int getCheckBoxValue() const;
-    int getForceDetection() const;
+   // int getForceDetection() const;
     int isPaused() const;
 
     void setSliderValue(int);
+
     void callInstructions();
     void rotateRight();
     void rotateLeft();
