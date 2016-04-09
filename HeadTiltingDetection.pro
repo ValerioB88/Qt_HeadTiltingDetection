@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 win32{
-TARGET = ../QtHeadTilting_win32/HeadTiltingDetectionWin
+TARGET = HeadTiltingDetectionWin
 }
 linux{
 TARGET = bashFileLinux
@@ -20,7 +20,6 @@ SOURCES += main.cpp\
         mainwindow.cpp
 
 HEADERS  += mainwindow.h \
-    helpingFun.h \
     HelpingFun.h
 
 FORMS    += mainwindow.ui
